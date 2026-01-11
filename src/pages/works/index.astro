@@ -1,0 +1,149 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const PROJECTS = [
+    {
+        title: "Performance and Storage Analysis of CRYSTALS Kyber as a Post Quantum Replacement for RSA and ECC",
+        description: "An analysis of the post-quantum algorithm CRYSTALS-Kyber, testing its speed and efficiency against RSA and ECC. The results show Kyber is significantly faster at key generation and shared secret derivation on standard CPUs (Intel and ARM), confirming it is a practical, immediate solution for the post-quantum era.",
+        tags: ["RESEARCH", "CRYPTO", "PAPER"],
+        link: "https://doi.org/10.48550/arXiv.2508.01694",
+        linkText: "Read Paper",
+        image: null
+    }
+];
+---
+
+<Layout title="Works / Nicolas Rodriguez" lang={"en"}>
+    <h1>{"Works"}</h1>
+    <p>
+        Selected open source works and research papers.
+    </p>
+
+    <div class="projects-grid">
+        {PROJECTS.map((project) => (
+                <article class="project-card">
+                    {project.image && (
+                            <div class="project-img">
+                                <img src={project.image} alt={project.title} loading="lazy" />
+                            </div>
+                    )}
+
+                    <div class="project-content">
+                        <header>
+                            <h3>{project.title}</h3>
+                            <div class="tags">
+                                {project.tags.map(tag => <span class="tag">[{tag}]</span>)}
+                            </div>
+                        </header>
+
+                        <p>{project.description}</p>
+
+                        <a href={project.link} target="_blank" rel="noopener noreferrer" class="project-link">
+                            > {project.linkText}
+                        </a>
+                    </div>
+                </article>
+        ))}
+    </div>
+</Layout>
+
+<style>
+    .projects-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        margin-top: 3rem;
+    }
+
+    .project-card {
+        border: 1px solid var(--border);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        transition: box-shadow 0.2s;
+    }
+
+    .project-card:hover {
+        box-shadow: 4px 4px 0 var(--dim);
+    }
+
+    .project-img img {
+        width: 100%;
+        height: auto;
+        border: 1px solid var(--border);
+        max-height: 200px;
+        object-fit: cover;
+        filter: grayscale(100%);
+        transition: filter 0.3s;
+    }
+    .project-card:hover .project-img img {
+        filter: grayscale(0%);
+    }
+
+    .project-content {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        border-bottom: 1px dashed var(--dim);
+        padding-bottom: 0.5rem;
+    }
+
+    h3 {
+        margin: 0;
+        font-size: 1.1rem;
+    }
+
+    .tags {
+        font-family: ui-monospace, monospace;
+        font-size: 0.7rem;
+        color: var(--dim);
+    }
+
+    .project-link {
+        display: inline-block;
+        margin-top: auto;
+        padding: 0.5rem 1rem;
+
+        font-family: ui-monospace, monospace;
+        font-size: 0.85rem;
+        font-weight: bold;
+        text-decoration: none;
+
+        color: var(--fg);
+        border: 1px solid var(--border);
+        border-radius: 2px;
+        background: transparent;
+
+        border-bottom: 1px solid var(--border);
+
+        transition: all 0.2s ease;
+        width: fit-content;
+    }
+
+    .project-link:hover {
+        background: var(--fg);
+        color: var(--bg);
+        border-color: var(--fg);
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    @media (min-width: 768px) {
+        .project-card:has(.project-img) {
+            flex-direction: row;
+        }
+        .project-img {
+            flex: 0 0 200px;
+        }
+    }
+</style>

@@ -1,0 +1,298 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="GPG Keys / Nicolas.R" lang="en">
+    <h1>Cryptographic Identity</h1>
+
+    <p>
+        To communicate securely with me, please verify the fingerprint below.
+        This page is generated directly from my public key file.
+    </p>
+
+    <div id="loading" style="padding: 2rem; text-align: center;">
+        Loading key information...
+    </div>
+
+    <div id="key-content" style="display: none;">
+        <div class="gpg-card">
+            <div class="gpg-header">
+                <span class="gpg-type" id="algo-label"></span>
+                <span class="gpg-status" id="status-label"></span>
+            </div>
+
+            <div class="gpg-uid" id="user-id"></div>
+
+            <div class="gpg-section">
+                <div class="label">Fingerprint</div>
+                <div class="fingerprint" id="fingerprint"></div>
+            </div>
+
+            <div class="gpg-meta">
+                <div>
+                    <span class="label">Created:</span> <span id="created-date"></span>
+                </div>
+                <div>
+                    <span class="label">Expires:</span> <span id="expiration-text"></span>
+                </div>
+            </div>
+
+            <div class="gpg-actions">
+                <a href="#" id="download-link" download="nichokas.asc" class="btn-primary">
+                    [ Download .asc ]
+                </a>
+            </div>
+
+            <div class="terminal-copy">
+                <div class="label">Quick Import:</div>
+                <code id="cmd-box"></code>
+                <button id="copy-btn" aria-label="Copy command">[ Copy ]</button>
+            </div>
+        </div>
+
+        <h2>Raw Public Key</h2>
+        <pre id="raw-key" data-eco-exclude></pre>
+    </div>
+
+    <div id="error-content" style="display: none; padding: 2rem; color: #e74c3c; border: 1px solid #e74c3c;">
+        <strong>Error:</strong> <span id="error-message"></span>
+    </div>
+</Layout>
+
+<script>
+    import * as openpgp from 'openpgp';
+
+    const CDN_MAIN = 'https://cdn.nichokas.eu';
+    const CDN_BACKUP = 'https://objectstorage.eu-paris-1.oraclecloud.com/n/axzx3w6iu6ik/b/nichokas/o';
+    const FILENAME = 'nichokas.asc';
+    const TIMEOUT_MS = 3000;
+
+    const STORAGE_KEY = 'cdn_breaker_status';
+    const BREAK_DURATION = 3600 * 1000;
+
+    async function fetchWithTimeout(url, timeout = TIMEOUT_MS) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+        try {
+            const response = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            return response;
+        } catch (error) {
+            clearTimeout(timeoutId);
+            throw error;
+        }
+    }
+
+    function shouldSkipMain() {
+        const record = localStorage.getItem(STORAGE_KEY);
+        if (record) {
+            const { timestamp } = JSON.parse(record);
+            if (Date.now() - timestamp < BREAK_DURATION) return true;
+            localStorage.removeItem(STORAGE_KEY);
+        }
+        return false;
+    }
+
+    async function downloadKey() {
+        let keyArmored = '';
+        let activeUrl = '';
+
+        const forceBackup = shouldSkipMain();
+
+        if (!forceBackup) {
+            try {
+                console.log('[Key Download] Attempting Main CDN...');
+                const resMain = await fetchWithTimeout(`${CDN_MAIN}/${FILENAME}`);
+
+                if (!resMain.ok) throw new Error('Status not OK');
+
+                keyArmored = await resMain.text();
+                activeUrl = `${CDN_MAIN}/${FILENAME}`;
+                console.log('[Key Download] Success from Main CDN');
+
+                return { keyArmored, activeUrl };
+
+            } catch (e) {
+                console.warn('[Key Download] Main CDN failed or timeout. Opening circuit...');
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({ timestamp: Date.now() }));
+            }
+        } else {
+            console.log('[Key Download] Open circuit detected. Using Backup directly.');
+        }
+
+        try {
+            const resBackup = await fetchWithTimeout(`${CDN_BACKUP}/${FILENAME}`);
+            if (resBackup.ok) {
+                keyArmored = await resBackup.text();
+                activeUrl = `${CDN_BACKUP}/${FILENAME}`;
+                console.log('[Key Download] Success from Backup CDN');
+            } else {
+                throw new Error('Backup status not OK');
+            }
+        } catch (e2) {
+            console.error('[Key Download] Both CDNs failed');
+            throw new Error('Could not download key from any CDN. Please try again later.');
+        }
+
+        return { keyArmored, activeUrl };
+    }
+
+    async function parseAndDisplayKey() {
+        const loading = document.getElementById('loading');
+        const keyContent = document.getElementById('key-content');
+        const errorContent = document.getElementById('error-content');
+
+        try {
+            const { keyArmored, activeUrl } = await downloadKey();
+
+            const key = await openpgp.readKey({ armoredKey: keyArmored });
+            const fingerprint = key.getFingerprint();
+            const creationDate = key.getCreationTime();
+            const expirationDate = await key.getExpirationTime();
+            const user = key.users[0].userID.userID;
+            const algoInfo = key.getAlgorithmInfo();
+
+            let algoLabel = "Unknown";
+            if (algoInfo.curve) {
+                algoLabel = algoInfo.curve.charAt(0).toUpperCase() + algoInfo.curve.slice(1);
+            } else if (algoInfo.algorithm) {
+                algoLabel = algoInfo.algorithm.toUpperCase();
+                if (algoInfo.bits) {
+                    algoLabel += ` ${algoInfo.bits}`;
+                }
+            }
+
+            const fmtFingerprint = fingerprint.match(/.{1,4}/g).join(' ');
+
+            let expirationText = "Never";
+            let isExpired = false;
+
+            if (expirationDate && expirationDate !== Infinity) {
+                const now = new Date();
+                const diffTime = Math.abs(expirationDate - now);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (now > expirationDate) {
+                    isExpired = true;
+                    expirationText = `Expired on ${expirationDate.toLocaleDateString()}`;
+                } else {
+                    expirationText = `${expirationDate.toLocaleDateString()} (${diffDays} days left)`;
+                }
+            }
+
+            const termCommand = `curl -sL ${activeUrl} | gpg --import`;
+
+            document.getElementById('algo-label').innerText = algoLabel;
+            const statusLabel = document.getElementById('status-label');
+            statusLabel.innerText = isExpired ? '[ EXPIRED ]' : '[ ACTIVE ]';
+            statusLabel.className = `gpg-status ${isExpired ? 'expired' : 'valid'}`;
+
+            document.getElementById('user-id').innerText = user;
+            document.getElementById('fingerprint').innerText = fmtFingerprint;
+            document.getElementById('created-date').innerText = creationDate.toLocaleDateString();
+            document.getElementById('expiration-text').innerText = expirationText;
+            document.getElementById('cmd-box').innerText = termCommand;
+            document.getElementById('raw-key').innerText = keyArmored;
+
+            const blob = new Blob([keyArmored], { type: 'text/plain' });
+            const downloadUrl = URL.createObjectURL(blob);
+            document.getElementById('download-link').href = downloadUrl;
+
+            loading.style.display = 'none';
+            keyContent.style.display = 'block';
+
+            const copyBtn = document.getElementById('copy-btn');
+            const cmdBox = document.getElementById('cmd-box');
+            copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(cmdBox.innerText).then(() => {
+                    const original = copyBtn.innerText;
+                    copyBtn.innerText = "[ Copied! ]";
+                    setTimeout(() => copyBtn.innerText = original, 2000);
+                });
+            });
+
+        } catch (error) {
+            console.error('[Key Error]', error);
+            loading.style.display = 'none';
+            errorContent.style.display = 'block';
+            document.getElementById('error-message').innerText = error.message;
+        }
+    }
+
+    parseAndDisplayKey();
+</script>
+
+<style>
+    .gpg-card {
+        border: 1px solid var(--fg);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 4px 4px 0 var(--dim);
+        background: var(--bg);
+    }
+
+    .gpg-header {
+        display: flex; justify-content: space-between; margin-bottom: 1rem;
+        font-family: ui-monospace, monospace; font-size: 0.85rem;
+    }
+
+    .gpg-status.valid { color: #2ecc71; font-weight: bold; }
+    .gpg-status.expired { color: #e74c3c; font-weight: bold; }
+
+    .gpg-uid { font-weight: bold; font-size: 1.1rem; margin-bottom: 1.5rem; border-bottom: 1px dashed var(--border); padding-bottom: 0.5rem; }
+
+    .gpg-section { margin-bottom: 1.5rem; }
+
+    .label {
+        text-transform: uppercase; font-size: 0.7rem; color: var(--dim);
+        letter-spacing: 0.05em; margin-bottom: 0.2rem;
+    }
+
+    .fingerprint {
+        font-family: ui-monospace, monospace;
+        font-size: 1rem; word-break: break-all;
+        color: var(--link);
+    }
+
+    @media (min-width: 768px) {
+        .fingerprint { font-size: 1.2rem; }
+    }
+
+    .gpg-meta {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+        margin-bottom: 1.5rem; font-size: 0.9rem;
+    }
+
+    .gpg-actions {
+        display: flex; gap: 1rem; margin-bottom: 1.5rem;
+    }
+
+    .btn-primary, .btn-secondary {
+        text-decoration: none; font-weight: bold; font-family: ui-monospace, monospace;
+    }
+    .btn-primary { color: var(--bg); background: var(--fg); padding: 0.3rem 0.6rem; }
+    .btn-primary:hover { opacity: 0.8; }
+
+    .btn-secondary { color: var(--fg); border: 1px solid var(--fg); padding: 0.3rem 0.6rem; }
+    .btn-secondary:hover { background: var(--border); }
+
+    .terminal-copy {
+        background: #f4f4f4; padding: 0.8rem;
+        border: 1px solid var(--border); font-size: 0.8rem;
+        display: flex; flex-direction: column; gap: 0.5rem;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        .terminal-copy { background: #222; }
+    }
+
+    code { font-family: ui-monospace, monospace; word-break: break-all; }
+
+    #copy-btn {
+        align-self: flex-start; background: none; border: none;
+        color: var(--link); cursor: pointer; padding: 0;
+        font-family: ui-monospace, monospace; font-weight: bold;
+    }
+    #copy-btn:hover { text-decoration: underline; }
+</style>

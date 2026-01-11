@@ -1,0 +1,107 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Inicio / Nicolas Rodriguez" lang="esp">
+	<h1>Sobre Mí</h1>
+	<p>
+		Soy Nicolás, estudiante de primero de bachillerato en el <a href="http://iesparquesol.centros.educa.jcyl.es/sitio/">IES Parquesol</a>. Me interesan principalmente la informática y los temas científicos.
+	</p>
+	<h2>> ./ contacto</h2>
+
+	<dl class="network-grid">
+		<div class="net-item">
+			<dt>Email [Personal]</dt>
+			<dd>
+				<a href="mailto:me@nichokas.eu">me@nichokas.eu</a>
+			</dd>
+		</div>
+
+		<div class="net-item">
+			<dt>Email [Academic]</dt>
+			<dd>
+				<a href="mailto:nicolas.rodalv@educa.jcyl.es">nicolas.rodalv@educa.jcyl.es</a>
+			</dd>
+		</div>
+
+		<div class="net-item">
+			<dt>GitHub</dt>
+			<dd>
+				<a href="https://github.com/nichokas" target="_blank" rel="noopener noreferrer">
+					github.com/nichokas
+				</a>
+			</dd>
+		</div>
+
+		<div class="net-item">
+			<dt>ORCID</dt>
+			<dd>
+				<a href="https://orcid.org/0009-0002-6804-386X" target="_blank" rel="noopener noreferrer">
+					0009-0002-6804-386X
+				</a>
+			</dd>
+		</div>
+
+		<div class="net-item">
+			<dt>DISCORD</dt>
+			<dd>
+				<a href="https://discordapp.com/users/976878661242331156" target="_blank" rel="noopener noreferrer">
+					nichokitas
+				</a>
+			</dd>
+		</div>
+	</dl>
+</Layout>
+
+<style>
+	h2 {
+		margin-top: 3rem;
+		font-family: ui-monospace, monospace;
+		font-size: 1.1rem;
+		border-bottom: 1px dashed var(--dim);
+		padding-bottom: 0.5rem;
+		margin-bottom: 1.5rem;
+		color: var(--dim);
+	}
+
+	.network-grid {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 1.5rem;
+		font-family: ui-monospace, monospace;
+	}
+
+	@media (min-width: 600px) {
+		.network-grid {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+
+	.net-item dt {
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--dim);
+		margin-bottom: 0.3rem;
+	}
+
+	.net-item dd {
+		margin: 0;
+		font-size: 0.95rem;
+		font-weight: bold;
+		overflow-wrap: break-word;
+	}
+
+	.net-item a {
+		color: var(--fg);
+		text-decoration: none;
+		border-bottom: 1px solid var(--border);
+		transition: border-color 0.2s;
+	}
+
+	.net-item a:hover {
+		border-bottom-color: var(--fg);
+		background: var(--fg);
+		color: var(--bg);
+	}
+</style>
