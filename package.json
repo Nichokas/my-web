@@ -7,10 +7,12 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "deploy": "yarn build && bash deploy.sh"
+    "start": "node server.js",
+    "deploy": "yarn build && yarn start"
   },
   "dependencies": {
     "astro": "^5.16.7",
+    "express": "^5.2.1",
     "openpgp": "^6.3.0"
   }
 }
