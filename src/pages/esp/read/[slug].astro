@@ -1,0 +1,153 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import fs from 'node:fs';
+import path from 'node:path';
+
+// Generar rutas estáticas para cada archivo .txt encontrado
+export async function getStaticPaths() {
+  const txtDirectory = path.join(process.cwd(), 'public/txt');
+  
+  try {
+    const files = fs.readdirSync(txtDirectory).filter(file => file.endsWith('.txt'));
+    
+    return files.map(file => ({
+      params: { slug: file }, // La URL será /read/nombre-archivo.txt
+      props: { fileName: file }
+    }));
+  } catch (e) {
+    return [];
+  }
+}
+
+const { fileName } = Astro.props;
+const filePath = path.join(process.cwd(), 'public/txt', fileName);
+
+let content = '';
+let fileStats = { size: 0, mtime: new Date() };
+
+try {
+  content = fs.readFileSync(filePath, 'utf-8');
+  const stats = fs.statSync(filePath);
+  fileStats = {
+    size: (stats.size / 1024).toFixed(2),
+    mtime: stats.mtime
+  };
+} catch (e) {
+  content = "Error reading file.";
+}
+
+// Dividir párrafos
+const paragraphs = content.split(/\n\s*\n/);
+---
+
+<Layout title={`Reading: ${fileName}`} lang="esp">
+  
+  <input type="checkbox" id="theme-toggle" class="theme-trigger" />
+
+  <div class="reader-container">
+    <nav class="nav-back">
+      <a href="/read">< [..] Directory Index</a>
+    </nav>
+
+    <header class="doc-header">
+      <div class="meta-block">
+        <div><span class="label">TXT_FILE:</span> {fileName}</div>
+        <div><span class="label">SIZE_KB:</span> {fileStats.size}</div>
+        <div><span class="label">MODIFIED:</span> {fileStats.mtime.toISOString().split('T')[0]}</div>
+      </div>
+      
+      <label for="theme-toggle" class="contrast-btn">
+        [ INVERT COLORS ]
+      </label>
+    </header>
+
+    <article class="doc-content">
+      {paragraphs.map((p) => (
+        <p>{p}</p>
+      ))}
+    </article>
+
+    <footer class="doc-footer">
+      <p>*** END OF STREAM ***</p>
+    </footer>
+  </div>
+</Layout>
+
+<style>
+  .theme-trigger { display: none; }
+
+  .reader-container {
+    font-family: "Courier New", Courier, monospace;
+    max-width: 68ch;
+    margin: 0 auto;
+    padding-top: 1rem;
+  }
+
+  .nav-back a {
+    text-decoration: none;
+    color: var(--dim);
+    font-size: 0.85rem;
+  }
+  .nav-back a:hover { color: var(--fg); text-decoration: underline; }
+
+  .doc-header {
+    border-bottom: 2px solid var(--fg);
+    padding: 1.5rem 0;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .meta-block { font-size: 0.8rem; line-height: 1.4; }
+  .label { font-weight: bold; }
+
+  .contrast-btn {
+    cursor: pointer;
+    font-size: 0.75rem;
+    border: 1px solid var(--fg);
+    padding: 2px 6px;
+  }
+  .contrast-btn:hover { background: var(--fg); color: var(--bg); }
+
+  .doc-content {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    text-align: justify;
+    white-space: pre-line; /* Respeta saltos de línea simples dentro de párrafos */
+  }
+  
+  .doc-content p { margin-bottom: 1.5rem; }
+
+  .doc-footer {
+    margin-top: 3rem;
+    text-align: center;
+    color: var(--dim);
+    font-size: 0.8rem;
+    border-top: 1px dashed var(--dim);
+    padding-top: 1rem;
+  }
+
+  /* Lógica de colores (copiada de la anterior) */
+  #theme-toggle:checked ~ .reader-container {
+    --bg: #111; --fg: #eee; --dim: #888;
+    background-color: var(--bg);
+    color: var(--fg);
+    padding: 2rem;
+    border: 1px solid var(--dim);
+  }
+  
+  /* Soporte para el botón en modo oscuro */
+  #theme-toggle:checked ~ .reader-container .contrast-btn {
+    background: var(--fg); color: var(--bg);
+  }
+  #theme-toggle:checked ~ .reader-container .contrast-btn:hover {
+    background: transparent; color: var(--fg); border-color: var(--fg);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    #theme-toggle:checked ~ .reader-container {
+      --bg: #fff; --fg: #000; --dim: #666;
+    }
+  }
+</style>
