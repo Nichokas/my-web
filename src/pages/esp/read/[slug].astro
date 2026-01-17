@@ -11,7 +11,7 @@ export async function getStaticPaths() {
     const files = fs.readdirSync(txtDirectory).filter(file => file.endsWith('.txt'));
     
     return files.map(file => ({
-      params: { slug: file }, // La URL será /read/nombre-archivo.txt
+      params: { slug: file }, // La URL será esp/read/nombre-archivo.txt
       props: { fileName: file }
     }));
   } catch (e) {
