@@ -2337,10 +2337,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]\
       ]],\
       ["h3", [\
-        ["npm:1.15.4", {\
-          "packageLocation": "./.yarn/cache/h3-npm-1.15.4-7a97ca8210-0f0024a22c.zip/node_modules/h3/",\
+        ["npm:1.15.5", {\
+          "packageLocation": "./.yarn/cache/h3-npm-1.15.5-676ab956f4-455f58681d.zip/node_modules/h3/",\
           "packageDependencies": [\
-            ["h3", "npm:1.15.4"],\
+            ["h3", "npm:1.15.5"],\
             ["cookie-es", "npm:1.2.2"],\
             ["crossws", "npm:0.3.5"],\
             ["defu", "npm:6.1.4"],\
@@ -2348,7 +2348,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["iron-webcrypto", "npm:1.2.1"],\
             ["node-mock-http", "npm:1.0.4"],\
             ["radix3", "npm:1.1.2"],\
-            ["ufo", "npm:1.6.2"],\
+            ["ufo", "npm:1.6.3"],\
             ["uncrypto", "npm:0.1.3"]\
           ],\
           "linkType": "HARD"\
@@ -3602,7 +3602,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["nopt", "npm:9.0.0"],\
             ["proc-log", "npm:6.1.0"],\
             ["semver", "npm:7.7.3"],\
-            ["tar", "npm:7.5.2"],\
+            ["tar", "npm:7.5.3"],\
             ["tinyglobby", "npm:0.2.15"],\
             ["which", "npm:6.0.0"]\
           ],\
@@ -4567,10 +4567,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]\
       ]],\
       ["tar", [\
-        ["npm:7.5.2", {\
-          "packageLocation": "./.yarn/cache/tar-npm-7.5.2-6d8cfb7a13-192559b0e7.zip/node_modules/tar/",\
+        ["npm:7.5.3", {\
+          "packageLocation": "./.yarn/cache/tar-npm-7.5.3-fbc2edd71f-146cd30727.zip/node_modules/tar/",\
           "packageDependencies": [\
-            ["tar", "npm:7.5.2"],\
+            ["tar", "npm:7.5.3"],\
             ["@isaacs/fs-minipass", "npm:4.0.1"],\
             ["chownr", "npm:3.0.0"],\
             ["minipass", "npm:7.1.2"],\
@@ -4693,6 +4693,13 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/ufo-npm-1.6.2-36d3072151-936161a12d.zip/node_modules/ufo/",\
           "packageDependencies": [\
             ["ufo", "npm:1.6.2"]\
+          ],\
+          "linkType": "HARD"\
+        }],\
+        ["npm:1.6.3", {\
+          "packageLocation": "./.yarn/cache/ufo-npm-1.6.3-29bac69d97-a23eff86bb.zip/node_modules/ufo/",\
+          "packageDependencies": [\
+            ["ufo", "npm:1.6.3"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -4918,7 +4925,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["chokidar", "npm:4.0.3"],\
             ["db0", null],\
             ["destr", "npm:2.0.5"],\
-            ["h3", "npm:1.15.4"],\
+            ["h3", "npm:1.15.5"],\
             ["idb-keyval", null],\
             ["ioredis", null],\
             ["lru-cache", "npm:10.4.3"],\
