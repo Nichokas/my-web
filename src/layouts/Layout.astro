@@ -483,27 +483,27 @@ const menu = NAV_ITEMS[lang];
                 pointer-events: none;
             }
             @media (max-width: 767px) {
-                .flag-icon,
-                .anim-flag,
-                .flag-rotator {
-                    width: 2.2em;
-                    height: auto;
-                }
                 static-cyl {
-                    height: 2.1em;
+                    height: 2.2em !important;
                     width: auto;
+                }
+                .flag-rotator,
+                .anim-flag {
+                    width: 4.3em !important;
+                    height: 3.2em !important;
                 }
                 .static-ror {
-                    height: 2em;
-                    width: auto;
+                    height: 3em !important;
+                    width: auto !important;
                 }
                 .doomsday-asterisk {
                     font-size: 0.6rem;
-                    top: -6px;
-                    margin-left: -0.5rem;
+                    top: -8px;
+                    margin-left: -0.8rem;
                 }
                 .identity-container {
                     gap: 0.5rem;
+                    align-items: center;
                 }
                 .eco-badge:hover::before {
                     display: none;
