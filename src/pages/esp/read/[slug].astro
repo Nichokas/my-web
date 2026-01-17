@@ -1,160 +1,186 @@
 ---
-import Layout from '../../../layouts/Layout.astro';
-import fs from 'node:fs';
-import path from 'node:path';
+import Layout from "../../../layouts/Layout.astro";
+import fs from "node:fs";
+import path from "node:path";
 
 export async function getStaticPaths() {
-  const txtDirectory = path.join(process.cwd(), 'public/txt');
-  try {
-    const files = fs.readdirSync(txtDirectory).filter(file => file.endsWith('.txt'));
-    return files.map(file => ({
-      params: { slug: file },
-      props: { fileName: file }
-    }));
-  } catch (e) {
-    return [];
-  }
+    const txtDirectory = path.join(process.cwd(), "public/txt");
+    try {
+        const files = fs
+            .readdirSync(txtDirectory)
+            .filter((file) => file.endsWith(".txt"));
+        return files.map((file) => ({
+            params: { slug: file },
+            props: { fileName: file },
+        }));
+    } catch (e) {
+        return [];
+    }
 }
 
 const { fileName } = Astro.props;
-const filePath = path.join(process.cwd(), 'public/txt', fileName);
-let content = '';
+const filePath = path.join(process.cwd(), "public/txt", fileName);
+let content = "";
 let fileStats = { size: 0, mtime: new Date() };
 
 try {
-  content = fs.readFileSync(filePath, 'utf-8');
-  const stats = fs.statSync(filePath);
-  fileStats = {
-    size: (stats.size / 1024).toFixed(2),
-    mtime: stats.mtime
-  };
+    content = fs.readFileSync(filePath, "utf-8");
+    const stats = fs.statSync(filePath);
+    fileStats = {
+        size: (stats.size / 1024).toFixed(2),
+        mtime: stats.mtime,
+    };
 } catch (e) {
-  content = "Error reading file.";
+    content = "Error reading file.";
 }
 
 const paragraphs = content.split(/\n\s*\n/);
 ---
 
-<Layout title={`Reading: ${fileName}`} lang="esp">
-  
-  <input type="checkbox" id="theme-toggle" class="theme-trigger" />
+<Layout
+    title={`Reading: ${fileName}`}
+    lang="esp"
+    fullWidth={true}
+    disableEco={true}
+>
+    <input type="checkbox" id="theme-toggle" class="theme-trigger" />
 
-  <div class="reader-container">
-    <nav class="nav-back">
-      <a href="/read">< [..] Directory Index</a>
-    </nav>
+    <div class="reader-container">
+        <nav class="nav-back">
+            <a href="/esp/read">< [..] Directory Index</a>
+        </nav>
 
-    <header class="doc-header">
-      <div class="meta-block">
-        <span class="label">FILE:</span> {fileName} | 
-        <span class="label">SIZE:</span> {fileStats.size} KB | 
-        <span class="label">DATE:</span> {fileStats.mtime.toISOString().split('T')[0]}
-      </div>
-      
-      <label for="theme-toggle" class="contrast-btn">
-        [ INVERT ]
-      </label>
-    </header>
+        <header class="doc-header">
+            <div class="meta-block">
+                <span class="label">FILE:</span>
+                {fileName} |
+                <span class="label">SIZE:</span>
+                {fileStats.size} KB |
+                <span class="label">DATE:</span>
+                {fileStats.mtime.toISOString().split("T")[0]}
+            </div>
 
-    <article class="doc-content">
-      {paragraphs.map((p) => (
-        <p>{p}</p>
-      ))}
-    </article>
+            <label for="theme-toggle" class="contrast-btn"> [ INVERT ] </label>
+        </header>
 
-    <footer class="doc-footer">
-      <p>*** END OF STREAM ***</p>
-    </footer>
-  </div>
+        <article class="doc-content">
+            {paragraphs.map((p) => <p>{p}</p>)}
+        </article>
+
+        <footer class="doc-footer">
+            <p>*** END OF STREAM ***</p>
+        </footer>
+    </div>
 </Layout>
 
 <style>
-  .theme-trigger { display: none; }
-
-  .reader-container {
-    font-family: "Courier New", Courier, monospace;
-    width: 96%;
-    max-width: none;
-    margin: 0 auto;
-    padding-top: 1rem;
-  }
-
-  .doc-content {
-    font-size: 0.8rem;
-    line-height: 1.4;
-    text-align: justify;
-    white-space: pre-line;
-    width: 100%;
-  }
-  
-  .doc-content p { 
-    margin-bottom: 1.2rem;
-  }
-
-  .nav-back a {
-    text-decoration: none;
-    color: var(--dim);
-    font-size: 0.75rem;
-    font-weight: bold;
-  }
-  .nav-back a:hover { color: var(--fg); text-decoration: underline; }
-
-  .doc-header {
-    border-bottom: 1px solid var(--fg);
-    padding: 0.5rem 0;
-    margin-bottom: 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .meta-block { 
-    font-size: 0.7rem;
-    color: var(--dim);
-  }
-  .label { font-weight: bold; color: var(--fg); }
-
-  .contrast-btn {
-    cursor: pointer;
-    font-size: 0.7rem;
-    border: 1px solid var(--fg);
-    padding: 1px 5px;
-    font-weight: bold;
-  }
-  .contrast-btn:hover { background: var(--fg); color: var(--bg); }
-
-  .doc-footer {
-    margin-top: 2rem;
-    text-align: center;
-    color: var(--dim);
-    font-size: 0.7rem;
-    border-top: 1px dashed var(--dim);
-    padding-top: 0.5rem;
-  }
-
-  /* Tema Oscuro / Invertido */
-  #theme-toggle:checked ~ .reader-container {
-    --bg: #111; --fg: #ccc; --dim: #666;
-    background-color: var(--bg);
-    color: var(--fg);
-    
-    /* Pequeño padding extra cuando se activa el modo "caja" */
-    padding-left: 1rem;
-    padding-right: 1rem;
-    padding-bottom: 2rem;
-    border: 1px solid var(--dim);
-  }
-  
-  #theme-toggle:checked ~ .reader-container .contrast-btn {
-    background: var(--fg); color: var(--bg);
-  }
-  #theme-toggle:checked ~ .reader-container .contrast-btn:hover {
-    background: transparent; color: var(--fg); border-color: var(--fg);
-  }
-
-  @media (prefers-color-scheme: dark) {
-    #theme-toggle:checked ~ .reader-container {
-      --bg: #fff; --fg: #000; --dim: #666;
+    .theme-trigger {
+        display: none;
     }
-  }
+
+    .reader-container {
+        font-family: "Courier New", Courier, monospace;
+        width: 90%;
+        max-width: none;
+        margin: 0 auto;
+        padding-top: 1rem;
+    }
+
+    .doc-header,
+    .nav-back,
+    .doc-footer {
+        font-family: "Courier New", Courier, monospace;
+    }
+
+    .doc-content {
+        font-size: 0.9rem;
+        line-height: 1.4;
+        text-align: left;
+        white-space: pre-line;
+        width: 100%;
+    }
+
+    .doc-content p {
+        margin-bottom: 1rem;
+    }
+
+    .nav-back a {
+        text-decoration: none;
+        color: var(--dim);
+        font-size: 0.75rem;
+        font-weight: bold;
+        display: block;
+        margin-bottom: 1rem;
+    }
+    .nav-back a:hover {
+        color: var(--fg);
+        text-decoration: underline;
+    }
+
+    .doc-header {
+        border-bottom: 1px solid var(--fg);
+        padding: 0.5rem 0;
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .meta-block {
+        font-size: 0.7rem;
+        color: var(--dim);
+    }
+    .label {
+        font-weight: bold;
+        color: var(--fg);
+    }
+
+    .contrast-btn {
+        cursor: pointer;
+        font-size: 0.7rem;
+        border: 1px solid var(--fg);
+        padding: 1px 5px;
+        font-weight: bold;
+    }
+    .contrast-btn:hover {
+        background: var(--fg);
+        color: var(--bg);
+    }
+
+    .doc-footer {
+        margin-top: 2rem;
+        text-align: center;
+        color: var(--dim);
+        font-size: 0.7rem;
+        border-top: 1px dashed var(--dim);
+        padding-top: 0.5rem;
+    }
+
+    /* Modos de color */
+    #theme-toggle:checked ~ .reader-container {
+        --bg: #111;
+        --fg: #ccc;
+        --dim: #666;
+        background-color: var(--bg);
+        color: var(--fg);
+        padding: 1rem;
+        border: 1px solid var(--dim);
+    }
+    #theme-toggle:checked ~ .reader-container .contrast-btn {
+        background: var(--fg);
+        color: var(--bg);
+    }
+    #theme-toggle:checked ~ .reader-container .contrast-btn:hover {
+        background: transparent;
+        color: var(--fg);
+        border-color: var(--fg);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        #theme-toggle:checked ~ .reader-container {
+            --bg: #fff;
+            --fg: #000;
+            --dim: #666;
+        }
+    }
 </style>

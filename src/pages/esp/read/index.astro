@@ -1,118 +1,133 @@
 ---
-import Layout from '../../../layouts/Layout.astro';
-import fs from 'node:fs';
-import path from 'node:path';
+import Layout from "../../../layouts/Layout.astro";
+import fs from "node:fs";
+import path from "node:path";
 
-// Directorio donde están los txt
-const txtDirectory = path.join(process.cwd(), 'public/txt');
+const txtDirectory = path.join(process.cwd(), "public/txt");
 
-// Obtenemos la lista de archivos
 let files = [];
 try {
-  const fileNames = fs.readdirSync(txtDirectory).filter(f => f.endsWith('.txt'));
-  
-  files = fileNames.map(fileName => {
-    const stats = fs.statSync(path.join(txtDirectory, fileName));
-    return {
-      name: fileName,
-      // Slug limpia el nombre para la URL (opcional, aquí usamos el nombre tal cual)
-      slug: fileName, 
-      size: (stats.size / 1024).toFixed(1) + ' KB',
-      date: stats.mtime.toISOString().split('T')[0]
-    };
-  });
+    const fileNames = fs
+        .readdirSync(txtDirectory)
+        .filter((f) => f.endsWith(".txt"));
+
+    files = fileNames.map((fileName) => {
+        const stats = fs.statSync(path.join(txtDirectory, fileName));
+        return {
+            name: fileName,
+            slug: fileName,
+            size: (stats.size / 1024).toFixed(1) + " KB",
+            date: stats.mtime.toISOString().split("T")[0],
+        };
+    });
 } catch (e) {
-  console.error("No se encontró la carpeta public/txt", e);
+    console.error("Error leyendo directorio txt", e);
 }
 ---
 
-<Layout title="Index of /txt" lang="esp">
-  <div class="terminal-container">
-    <h1>Index of /read</h1>
-    <div class="separator"></div>
-    
-    <table class="file-list">
-      <thead>
-        <tr>
-          <th class="col-name">Name</th>
-          <th class="col-date">Last modified</th>
-          <th class="col-size">Size</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td colspan="3" class="parent-dir"><a href="/">[..] Parent Directory</a></td>
-        </tr>
-        {files.map((file) => (
-          <tr>
-            <td class="col-name">
-              <a href={`esp/read/${file.slug}`}>{file.name}</a>
-            </td>
-            <td class="col-date">{file.date}</td>
-            <td class="col-size">{file.size}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-    
-    <div class="separator"></div>
-    <p class="server-sig">Server at nichokas.eu Port 443</p>
-  </div>
+<Layout title="Index of /txt" lang="esp" fullWidth={true}>
+    <div class="terminal-container">
+        <h1>Index of /esp/read/</h1>
+        <div class="separator"></div>
+
+        <table class="file-list">
+            <thead>
+                <tr>
+                    <th class="col-name">Name</th>
+                    <th class="col-date">Last modified</th>
+                    <th class="col-size">Size</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3" class="parent-dir"
+                        ><a href="/esp">[..] Parent Directory</a></td
+                    >
+                </tr>
+                {
+                    files.map((file) => (
+                        <tr>
+                            <td class="col-name">
+                                <a href={`/esp/read/${file.slug}`}>
+                                    {file.name}
+                                </a>
+                            </td>
+                            <td class="col-date">{file.date}</td>
+                            <td class="col-size">{file.size}</td>
+                        </tr>
+                    ))
+                }
+            </tbody>
+        </table>
+
+        <div class="separator"></div>
+        <p class="server-sig">NICHOKAS Server at nichokas.eu Port 443</p>
+    </div>
 </Layout>
 
 <style>
-  .terminal-container {
-    font-family: "Courier New", Courier, monospace;
-    max-width: 800px;
-    margin: 2rem auto;
-    font-size: 0.9rem;
-  }
+    .terminal-container {
+        font-family: "Courier New", Courier, monospace;
+        width: 100%;
+        max-width: 800px;
+        margin: 2rem auto;
+        font-size: 0.9rem;
+    }
 
-  h1 {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-    font-weight: bold;
-  }
+    h1 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+    }
 
-  .separator {
-    border-bottom: 1px solid var(--fg);
-    margin: 1rem 0;
-  }
+    .separator {
+        border-bottom: 1px solid var(--fg);
+        margin: 1rem 0;
+    }
 
-  .file-list {
-    width: 100%;
-    border-collapse: collapse;
-  }
+    .file-list {
+        width: 100%;
+        border-collapse: collapse;
+    }
 
-  th {
-    text-align: left;
-    padding-bottom: 0.5rem;
-    font-weight: bold;
-    border-bottom: 1px dashed var(--dim);
-  }
+    th {
+        text-align: left;
+        padding-bottom: 0.5rem;
+        font-weight: bold;
+        border-bottom: 1px dashed var(--dim);
+    }
 
-  td {
-    padding: 0.3rem 0;
-  }
+    td {
+        padding: 0.3rem 0;
+    }
 
-  a {
-    text-decoration: none;
-    color: var(--fg);
-  }
-  a:hover {
-    text-decoration: underline;
-    background-color: var(--fg);
-    color: var(--bg);
-  }
+    a {
+        text-decoration: none;
+        color: var(--fg);
+    }
+    a:hover {
+        text-decoration: underline;
+        background-color: var(--fg);
+        color: var(--bg);
+    }
 
-  .col-name { width: 55%; }
-  .col-date { width: 30%; color: var(--dim); }
-  .col-size { width: 15%; text-align: right; color: var(--dim); }
-  
-  .server-sig {
-    font-size: 0.75rem;
-    color: var(--dim);
-    margin-top: 1rem;
-    font-style: italic;
-  }
+    .col-name {
+        width: 55%;
+    }
+    .col-date {
+        width: 30%;
+        color: var(--dim);
+    }
+    .col-size {
+        width: 15%;
+        text-align: right;
+        color: var(--dim);
+    }
+
+    .server-sig {
+        font-size: 0.75rem;
+        color: var(--dim);
+        margin-top: 1rem;
+        font-style: italic;
+    }
 </style>

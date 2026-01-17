@@ -1,342 +1,783 @@
 ---
-const CDN_MAIN = 'https://cdn.nichokas.eu';
-const CDN_BACKUP = 'https://objectstorage.eu-paris-1.oraclecloud.com/n/axzx3w6iu6ik/b/nichokas/o';
+const CDN_MAIN = "https://cdn.nichokas.eu";
+const CDN_BACKUP =
+    "https://objectstorage.eu-paris-1.oraclecloud.com/n/axzx3w6iu6ik/b/nichokas/o";
 
 interface Props {
-  title: string;
-  lang?: 'en' | 'esp';
+    title: string;
+    lang?: "en" | "esp";
+    fullWidth?: boolean;
+    disableEco?: boolean;
 }
 
-const { title, lang = 'en' } = Astro.props;
+const {
+    title,
+    lang = "en",
+    fullWidth = false,
+    disableEco = false,
+} = Astro.props;
 const currentPath = Astro.url.pathname;
 
 let targetLangPath;
 
-if (lang === 'en') {
-  targetLangPath = currentPath === '/' ? '/esp' : `/esp${currentPath}`;
+if (lang === "en") {
+    targetLangPath = currentPath === "/" ? "/esp" : `/esp${currentPath}`;
 } else {
-  targetLangPath = currentPath.replace(/^\/esp/, '') || '/';
+    targetLangPath = currentPath.replace(/^\/esp/, "") || "/";
 }
 
-const langLabel = lang === 'en' ? '[ ESP ]' : '[ EN ]';
+const langLabel = lang === "en" ? "[ ESP ]" : "[ EN ]";
 
-const FILE_CYL = 'cyl.svg';
-const FILE_ESP = 'spain_emoji.svg';
-const FILE_EU = 'europe_emoji.svg';
-const FILE_REP = 'spain_republican_emoji.svg';
-const FILE_ROR = 'iesparquesol.png';
+const FILE_CYL = "cyl.svg";
+const FILE_ESP = "spain_emoji.svg";
+const FILE_EU = "europe_emoji.svg";
+const FILE_REP = "spain_republican_emoji.svg";
+const FILE_ROR = "iesparquesol.png";
 
 const getImgHtml = (filename: string, cssClass: string, alt: string) => {
-  const mainSrc = `${CDN_MAIN}/${filename}`;
-  const backSrc = `${CDN_BACKUP}/${filename}`;
-  return `<img 
-    src="${mainSrc}" 
-    class="${cssClass} check-timeout" 
-    alt="${alt}" 
+    const mainSrc = `${CDN_MAIN}/${filename}`;
+    const backSrc = `${CDN_BACKUP}/${filename}`;
+    return `<img
+    src="${mainSrc}"
+    class="${cssClass} check-timeout"
+    alt="${alt}"
     data-backup="${backSrc}"
-    onerror="this.onerror=null;this.src='${backSrc}'" 
+    onerror="this.onerror=null;this.src='${backSrc}'"
   />`;
 };
 
-let rotatorHtml = '';
-let animationClass = '';
+let rotatorHtml = "";
+let animationClass = "";
 
-if (lang === 'esp') {
-  animationClass = 'rotate-2';
-  rotatorHtml = `
-    ${getImgHtml(FILE_EU, 'anim-flag f1', 'Europa')}
-    ${getImgHtml(FILE_REP, 'anim-flag f2', 'República')}
+if (lang === "esp") {
+    animationClass = "rotate-2";
+    rotatorHtml = `
+    ${getImgHtml(FILE_EU, "anim-flag f1", "Europa")}
+    ${getImgHtml(FILE_REP, "anim-flag f2", "República")}
   `;
 } else {
-  animationClass = 'rotate-3';
-  rotatorHtml = `
-    ${getImgHtml(FILE_ESP, 'anim-flag f1', 'España')}
-    ${getImgHtml(FILE_EU, 'anim-flag f2', 'Europa')}
-    ${getImgHtml(FILE_REP, 'anim-flag f3', 'República')}
+    animationClass = "rotate-3";
+    rotatorHtml = `
+    ${getImgHtml(FILE_ESP, "anim-flag f1", "España")}
+    ${getImgHtml(FILE_EU, "anim-flag f2", "Europa")}
+    ${getImgHtml(FILE_REP, "anim-flag f3", "República")}
   `;
 }
 
 const DOOMSDAY_URL = "https://thebulletin.org/doomsday-clock/";
 const identityHtml = `
   <div class="identity-container">
-      ${getImgHtml(FILE_CYL, 'flag-icon static-cyl', 'CyL')}
+      ${getImgHtml(FILE_CYL, "flag-icon static-cyl", "CyL")}
       <div class="flag-rotator ${animationClass}">
         ${rotatorHtml}
       </div>
       <a href="${DOOMSDAY_URL}" target="_blank" rel="noopener noreferrer" class="doomsday-asterisk" title="It is 89 seconds to midnight">*</a>
-      ${getImgHtml(FILE_ROR, 'flag-icon static-ror', 'Institución')}
+      ${getImgHtml(FILE_ROR, "flag-icon static-ror", "Institución")}
   </div>
 `;
 
 const NAV_ITEMS = {
-  en: [
-    { label: './ home', path: '/' },
-    { label: './ keys', path: '/keys' },
-    { label: './ works', path: '/works' }
-  ],
-  esp: [
-    { label: './ inicio', path: '/esp' },
-    { label: './ claves', path: '/esp/keys' },
-    { label: './ proyectos', path: '/esp/works' }
-  ]
+    en: [
+        { label: "./ home", path: "/" },
+        { label: "./ keys", path: "/keys" },
+        { label: "./ works", path: "/works" },
+    ],
+    esp: [
+        { label: "./ inicio", path: "/esp" },
+        { label: "./ claves", path: "/esp/keys" },
+        { label: "./ proyectos", path: "/esp/works" },
+        { label: "./ texto & opinion", path: "/esp/read" },
+    ],
 };
 
 const menu = NAV_ITEMS[lang];
 ---
 
-<!DOCTYPE html>
-<html lang={lang === 'esp' ? 'es' : 'en'}>
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width" />
-  <title>{title}</title>
-  <style is:global>
-    :root { --bg: #fff; --fg: #000; --dim: #666; --border: #ddd; }
-    *, *::before, *::after { box-sizing: border-box; }
-    @media (prefers-color-scheme: dark) {
-      :root { --bg: #111; --fg: #ddd; --dim: #888; --border: #333; }
-      .doomsday-asterisk:hover { color: #ff6b6b; }
-    }
+<!doctype html>
+<html lang={lang === "esp" ? "es" : "en"}>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width" />
+        <title>{title}</title>
+        <style is:global>
+            :root {
+                --bg: #fff;
+                --fg: #000;
+                --dim: #666;
+                --border: #ddd;
+            }
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+            }
+            @media (prefers-color-scheme: dark) {
+                :root {
+                    --bg: #111;
+                    --fg: #ddd;
+                    --dim: #888;
+                    --border: #333;
+                }
+                .doomsday-asterisk:hover {
+                    color: #ff6b6b;
+                }
+            }
 
-    html { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--fg); }
-    body { margin: 0; min-height: 100vh; display: grid; grid-template-columns: 1fr; grid-template-rows: min-content 1fr; }
+            html {
+                font-family:
+                    system-ui,
+                    -apple-system,
+                    sans-serif;
+                background: var(--bg);
+                color: var(--fg);
+            }
+            body {
+                margin: 0;
+                min-height: 100vh;
+                display: grid;
+                grid-template-columns: 1fr;
+                grid-template-rows: min-content 1fr;
+            }
 
-    h1 { font-size: 1.5rem; margin-top: 0; letter-spacing: -0.03em; }
-    h2 { font-size: 1.2rem; margin-top: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3rem; }
-    p { line-height: 1.6; margin-bottom: 1.5rem; }
-    pre { background: var(--bg); border: 1px solid var(--border); padding: 1rem; overflow-x: auto; font-size: 0.85rem; }
+            h1 {
+                font-size: 1.5rem;
+                margin-top: 0;
+                letter-spacing: -0.03em;
+            }
+            h2 {
+                font-size: 1.2rem;
+                margin-top: 2rem;
+                border-bottom: 1px solid var(--border);
+                padding-bottom: 0.3rem;
+            }
+            p {
+                line-height: 1.6;
+                margin-bottom: 1.5rem;
+            }
+            pre {
+                background: var(--bg);
+                border: 1px solid var(--border);
+                padding: 1rem;
+                overflow-x: auto;
+                font-size: 0.85rem;
+            }
 
-    main a:not(.lang-switch):not(.project-link):not(.btn-primary) {
-      color: var(--fg); text-decoration: none; border-bottom: 1px solid var(--border); transition: background 0.2s, color 0.2s;
-    }
-    main a:not(.lang-switch):not(.project-link):not(.btn-primary):hover {
-      background: var(--fg); color: var(--bg); border-bottom-color: var(--fg); cursor: pointer;
-    }
+            main a:not(.lang-switch):not(.project-link):not(.btn-primary) {
+                color: var(--fg);
+                text-decoration: none;
+                border-bottom: 1px solid var(--border);
+                transition:
+                    background 0.2s,
+                    color 0.2s;
+            }
+            main
+                a:not(.lang-switch):not(.project-link):not(.btn-primary):hover {
+                background: var(--fg);
+                color: var(--bg);
+                border-bottom-color: var(--fg);
+                cursor: pointer;
+            }
 
-    aside {
-      padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);
-      font-family: ui-monospace, SFMono-Regular, monospace; background: var(--bg);
-      position: sticky; top: 0; z-index: 100; height: auto;
-    }
-    .aside-header { margin-bottom: 2rem; }
-    .menu-button { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; font-weight: bold; margin-bottom: 0.5rem; }
-    .identity-container { display: flex; align-items: center; gap: 1rem; padding-top: 0.5rem; }
+            aside {
+                padding: 1rem 1.5rem;
+                border-bottom: 1px solid var(--border);
+                font-family: ui-monospace, SFMono-Regular, monospace;
+                background: var(--bg);
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                height: auto;
+            }
+            .aside-header {
+                margin-bottom: 2rem;
+            }
+            .menu-button {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                cursor: pointer;
+                user-select: none;
+                font-weight: bold;
+                margin-bottom: 0.5rem;
+            }
+            .identity-container {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                padding-top: 0.5rem;
+            }
 
-    #menu-toggle { display: none; }
-    .menu-icon::after { content: "[ + ]"; color: var(--dim); }
-    #menu-toggle:checked ~ .aside-header .menu-button .menu-icon::after { content: "[ - ]"; color: var(--fg); }
+            #menu-toggle {
+                display: none;
+            }
+            .menu-icon::after {
+                content: "[ + ]";
+                color: var(--dim);
+            }
+            #menu-toggle:checked
+                ~ .aside-header
+                .menu-button
+                .menu-icon::after {
+                content: "[ - ]";
+                color: var(--fg);
+            }
 
-    .tree-nav { list-style: none; padding: 0; margin: 0; display: none; margin-top: 1rem; border-top: 1px dashed var(--border); padding-top: 1rem; }
-    #menu-toggle:checked ~ .tree-nav { display: block; }
-    .tree-nav li { margin-bottom: 0.4rem; }
-    .tree-nav a { text-decoration: none; color: var(--dim); display: block; padding: 0.2rem 0; }
-    .tree-nav a:hover { color: var(--fg); text-decoration: underline; }
-    .tree-nav a.active { font-weight: bold; color: var(--fg); }
-    .tree-nav a.active::before { content: "> "; }
+            .tree-nav {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                display: none;
+                margin-top: 1rem;
+                border-top: 1px dashed var(--border);
+                padding-top: 1rem;
+            }
+            #menu-toggle:checked ~ .tree-nav {
+                display: block;
+            }
+            .tree-nav li {
+                margin-bottom: 0.4rem;
+            }
+            .tree-nav a {
+                text-decoration: none;
+                color: var(--dim);
+                display: block;
+                padding: 0.2rem 0;
+            }
+            .tree-nav a:hover {
+                color: var(--fg);
+                text-decoration: underline;
+            }
+            .tree-nav a.active {
+                font-weight: bold;
+                color: var(--fg);
+            }
+            .tree-nav a.active::before {
+                content: "> ";
+            }
 
-    .flag-icon, .anim-flag { width: 3.3em; height: auto; border-radius: 3px; display: block; box-shadow: 1px 1px 3px rgba(0,0,0,0.2); }
-    .static-cyl { width: auto; height: 3.2em; }
-    .static-ror { height: 3em; width: auto; margin-left: 0.2rem; }
-    .flag-rotator { position: relative; width: 3.3em; height: 3.3em; display: flex; align-items: center; justify-content: center; }
+            .flag-icon,
+            .anim-flag {
+                width: 3.3em;
+                height: auto;
+                border-radius: 3px;
+                display: block;
+                box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+            }
+            .static-cyl {
+                width: auto;
+                height: 3.2em;
+            }
+            .static-ror {
+                height: 3em;
+                width: auto;
+                margin-left: 0.2rem;
+            }
+            .flag-rotator {
+                position: relative;
+                width: 3.3em;
+                height: 3.3em;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
 
-    .doomsday-asterisk { text-decoration: none; color: var(--dim); font-weight: bold; font-size: 0.7rem; line-height: 1; margin-left: -0.8rem; margin-right: -0.2rem; cursor: help; transition: color 0.2s ease; position: relative; top: -10px; }
-    .doomsday-asterisk:hover { color: #ff4444; }
+            .doomsday-asterisk {
+                text-decoration: none;
+                color: var(--dim);
+                font-weight: bold;
+                font-size: 0.7rem;
+                line-height: 1;
+                margin-left: -0.8rem;
+                margin-right: -0.2rem;
+                cursor: help;
+                transition: color 0.2s ease;
+                position: relative;
+                top: -10px;
+            }
+            .doomsday-asterisk:hover {
+                color: #ff4444;
+            }
 
-    .anim-flag { position: absolute; top: 50%; left: 0; transform: translateY(-50%); opacity: 0; }
-    .anim-flag.f1 { opacity: 1; }
+            .anim-flag {
+                position: absolute;
+                top: 50%;
+                left: 0;
+                transform: translateY(-50%);
+                opacity: 0;
+            }
+            .anim-flag.f1 {
+                opacity: 1;
+            }
 
-    @keyframes cycleTwo { 0%, 45% { opacity: 1; z-index: 2; } 50%, 100% { opacity: 0; z-index: 1; } }
-    .rotate-2 .f1 { animation: cycleTwo 6s infinite; }
-    .rotate-2 .f2 { animation: cycleTwo 6s infinite; animation-delay: 3s; opacity: 0; }
+            @keyframes cycleTwo {
+                0%,
+                45% {
+                    opacity: 1;
+                    z-index: 2;
+                }
+                50%,
+                100% {
+                    opacity: 0;
+                    z-index: 1;
+                }
+            }
+            .rotate-2 .f1 {
+                animation: cycleTwo 6s infinite;
+            }
+            .rotate-2 .f2 {
+                animation: cycleTwo 6s infinite;
+                animation-delay: 3s;
+                opacity: 0;
+            }
 
-    @keyframes cycleThree { 0%, 30% { opacity: 1; z-index: 2; } 33%, 97% { opacity: 0; z-index: 1; } 100% { opacity: 1; z-index: 2; } }
-    .rotate-3 .f1 { animation: cycleThree 9s infinite; }
-    .rotate-3 .f2 { animation: cycleThree 9s infinite; animation-delay: 3s; opacity: 0; }
-    .rotate-3 .f3 { animation: cycleThree 9s infinite; animation-delay: 6s; opacity: 0; }
+            @keyframes cycleThree {
+                0%,
+                30% {
+                    opacity: 1;
+                    z-index: 2;
+                }
+                33%,
+                97% {
+                    opacity: 0;
+                    z-index: 1;
+                }
+                100% {
+                    opacity: 1;
+                    z-index: 2;
+                }
+            }
+            .rotate-3 .f1 {
+                animation: cycleThree 9s infinite;
+            }
+            .rotate-3 .f2 {
+                animation: cycleThree 9s infinite;
+                animation-delay: 3s;
+                opacity: 0;
+            }
+            .rotate-3 .f3 {
+                animation: cycleThree 9s infinite;
+                animation-delay: 6s;
+                opacity: 0;
+            }
 
-    @media (prefers-reduced-motion: reduce) { .anim-flag { animation: none !important; opacity: 0 !important; } .anim-flag.f1 { opacity: 1 !important; } }
+            @media (prefers-reduced-motion: reduce) {
+                .anim-flag {
+                    animation: none !important;
+                    opacity: 0 !important;
+                }
+                .anim-flag.f1 {
+                    opacity: 1 !important;
+                }
+            }
 
-    main { padding: 1.5rem; padding-bottom: 16rem; max-width: 800px; position: relative; padding-top: 3rem; }
+            main {
+                padding: 1.5rem;
+                padding-bottom: 16rem;
+                max-width: 800px;
+                position: relative;
+                padding-top: 3rem;
+            }
 
-    .lang-switch { position: absolute; top: 1rem; right: 1.5rem; font-family: ui-monospace, monospace; font-size: 0.85rem; border: 1px solid var(--border); padding: 0.2rem 0.5rem; text-decoration: none; color: var(--fg); border-radius: 3px; z-index: 10; background: transparent; transition: background 0.2s, color 0.2s; }
-    .lang-switch:hover { background: var(--fg); color: var(--bg); cursor: pointer; }
+            .lang-switch {
+                position: absolute;
+                top: 1rem;
+                right: 1.5rem;
+                font-family: ui-monospace, monospace;
+                font-size: 0.85rem;
+                border: 1px solid var(--border);
+                padding: 0.2rem 0.5rem;
+                text-decoration: none;
+                color: var(--fg);
+                border-radius: 3px;
+                z-index: 10;
+                background: transparent;
+                transition:
+                    background 0.2s,
+                    color 0.2s;
+            }
+            .lang-switch:hover {
+                background: var(--fg);
+                color: var(--bg);
+                cursor: pointer;
+            }
 
-    .eco-badge { position: fixed; bottom: 1rem; right: 1rem; background: var(--bg); border: 2px solid var(--fg); width: auto; min-width: 110px; max-width: 180px; padding: 0.5rem; text-align: center; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.75rem; z-index: 50; box-shadow: 4px 4px 0 var(--dim); transition: opacity 0.5s; cursor: help; }
-    .eco-badge.hidden { opacity: 0; pointer-events: none; }
-    .eco-header { border-bottom: 1px solid var(--border); font-weight: bold; margin-bottom: 0.3rem; letter-spacing: 1px; }
-    .eco-grade { font-size: 1.5rem; font-weight: 900; color: #2ecc71; text-shadow: 2px 2px 0 var(--bg); line-height: 1; padding: 0.2rem 0;}
-    .eco-details { font-size: 0.65rem; color: var(--dim); border-top: 1px solid var(--border); margin-top: 0.3rem; padding-top: 0.3rem; white-space: normal; line-height: 1.3; }
-    .grade-a { color: #2ecc71 !important; } .grade-b { color: #f1c40f !important; } .grade-c { color: #e74c3c !important; }
+            .eco-badge {
+                position: fixed;
+                bottom: 1rem;
+                right: 1rem;
+                background: var(--bg);
+                border: 2px solid var(--fg);
+                width: auto;
+                min-width: 110px;
+                max-width: 180px;
+                padding: 0.5rem;
+                text-align: center;
+                font-family:
+                    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+                    monospace;
+                font-size: 0.75rem;
+                z-index: 50;
+                box-shadow: 4px 4px 0 var(--dim);
+                transition: opacity 0.5s;
+                cursor: help;
+            }
+            .eco-badge.hidden {
+                opacity: 0;
+                pointer-events: none;
+            }
+            .eco-header {
+                border-bottom: 1px solid var(--border);
+                font-weight: bold;
+                margin-bottom: 0.3rem;
+                letter-spacing: 1px;
+            }
+            .eco-grade {
+                font-size: 1.5rem;
+                font-weight: 900;
+                color: #2ecc71;
+                text-shadow: 2px 2px 0 var(--bg);
+                line-height: 1;
+                padding: 0.2rem 0;
+            }
+            .eco-details {
+                font-size: 0.65rem;
+                color: var(--dim);
+                border-top: 1px solid var(--border);
+                margin-top: 0.3rem;
+                padding-top: 0.3rem;
+                white-space: normal;
+                line-height: 1.3;
+            }
+            .grade-a {
+                color: #2ecc71 !important;
+            }
+            .grade-b {
+                color: #f1c40f !important;
+            }
+            .grade-c {
+                color: #e74c3c !important;
+            }
 
-    .eco-badge:hover::before { content: attr(data-tooltip); white-space: pre-wrap; position: absolute; bottom: 100%; right: 0; margin-bottom: 8px; z-index: 60; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.7rem; line-height: 1.5; text-align: left; width: max-content; max-width: 260px; padding: 0.8rem 1rem; border-radius: 4px; background: var(--fg); color: var(--bg); border: 1px solid var(--fg); box-shadow: 4px 4px 0 var(--dim); pointer-events: none; }
-    @media (max-width: 767px) { .eco-badge:hover::before { display: none; } }
+            .eco-badge:hover::before {
+                content: attr(data-tooltip);
+                white-space: pre-wrap;
+                position: absolute;
+                bottom: 100%;
+                right: 0;
+                margin-bottom: 8px;
+                z-index: 60;
+                font-family:
+                    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+                    monospace;
+                font-size: 0.7rem;
+                line-height: 1.5;
+                text-align: left;
+                width: max-content;
+                max-width: 260px;
+                padding: 0.8rem 1rem;
+                border-radius: 4px;
+                background: var(--fg);
+                color: var(--bg);
+                border: 1px solid var(--fg);
+                box-shadow: 4px 4px 0 var(--dim);
+                pointer-events: none;
+            }
+            @media (max-width: 767px) {
+                .flag-icon,
+                .anim-flag,
+                .flag-rotator {
+                    width: 2.2em;
+                    height: auto;
+                }
+                static-cyl {
+                    height: 2.1em;
+                    width: auto;
+                }
+                .static-ror {
+                    height: 2em;
+                    width: auto;
+                }
+                .doomsday-asterisk {
+                    font-size: 0.6rem;
+                    top: -6px;
+                    margin-left: -0.5rem;
+                }
+                .identity-container {
+                    gap: 0.5rem;
+                }
+                .eco-badge:hover::before {
+                    display: none;
+                }
+            }
 
-    @media (min-width: 768px) {
-      body { height: 100vh; overflow: hidden; grid-template-rows: 1fr; grid-template-columns: 300px 1fr; }
-      aside { padding: 2rem; border-bottom: none; border-right: 1px solid var(--border); height: 100%; overflow-y: auto; position: relative; }
-      .aside-header { margin-bottom: 3rem; }
-      main { padding: 2rem; padding-top: 4rem; padding-bottom: 4rem; height: 100%; overflow-y: auto; margin: 0 auto; max-width: 800px; }
-      h1 { font-size: 1.8rem; } h2 { font-size: 1.3rem; margin-top: 2.5rem; }
-      .lang-switch { top: 2.5rem; right: 2rem; }
-      .menu-button { cursor: default; }
-      .menu-icon { display: none; }
-      .tree-nav { display: block !important; border-top: none; padding-top: 0; }
-    }
-  </style>
-</head>
-<body>
+            @media (min-width: 768px) {
+                body {
+                    height: 100vh;
+                    overflow: hidden;
+                    grid-template-rows: 1fr;
+                    grid-template-columns: 300px 1fr;
+                }
+                aside {
+                    padding: 2rem;
+                    border-bottom: none;
+                    border-right: 1px solid var(--border);
+                    height: 100%;
+                    overflow-y: auto;
+                    position: relative;
+                }
+                .aside-header {
+                    margin-bottom: 3rem;
+                }
+                main {
+                    padding: 2rem;
+                    padding-top: 4rem;
+                    padding-bottom: 4rem;
+                    height: 100%;
+                    overflow-y: auto;
+                    margin: 0 auto;
+                    max-width: 800px;
+                }
+                h1 {
+                    font-size: 1.8rem;
+                }
+                h2 {
+                    font-size: 1.3rem;
+                    margin-top: 2.5rem;
+                }
+                .lang-switch {
+                    top: 2.5rem;
+                    right: 2rem;
+                }
+                .menu-button {
+                    cursor: default;
+                }
+                .menu-icon {
+                    display: none;
+                }
+                .tree-nav {
+                    display: block !important;
+                    border-top: none;
+                    padding-top: 0;
+                }
+            }
+            main.main-full {
+                max-width: 100% !important;
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+        </style>
+    </head>
+    <body>
+        <aside>
+            <input type="checkbox" id="menu-toggle" />
+            <div class="aside-header">
+                <label for="menu-toggle" class="menu-button">
+                    <span>Nicolas Rodriguez-Alvarez</span>
+                    <span class="menu-icon"></span>
+                </label>
+                <div set:html={identityHtml} />
+            </div>
 
-<aside>
-  <input type="checkbox" id="menu-toggle" />
-  <div class="aside-header">
-    <label for="menu-toggle" class="menu-button">
-      <span>Nicolas Rodriguez-Alvarez</span>
-      <span class="menu-icon"></span>
-    </label>
-    <div set:html={identityHtml} />
-  </div>
+            <ul class="tree-nav">
+                {
+                    menu.map((item) => {
+                        const itemPathClean =
+                            item.path.replace(/\/$/, "") || "/";
+                        const currentPathClean =
+                            currentPath.replace(/\/$/, "") || "/";
+                        const isActive =
+                            itemPathClean === currentPathClean ||
+                            (itemPathClean !== "/" &&
+                                itemPathClean !== "/esp" &&
+                                currentPathClean.startsWith(itemPathClean));
 
-  <ul class="tree-nav">
-    {menu.map((item) => {
-      const itemPathClean = item.path.replace(/\/$/, '') || '/';
-      const currentPathClean = currentPath.replace(/\/$/, '') || '/';
-      const isActive = itemPathClean === currentPathClean ||
-          (itemPathClean !== '/' && itemPathClean !== '/esp' && currentPathClean.startsWith(itemPathClean));
+                        return (
+                            <li>
+                                <a
+                                    href={item.path}
+                                    class={isActive ? "active" : ""}
+                                >
+                                    {item.label}
+                                </a>
+                            </li>
+                        );
+                    })
+                }
+            </ul>
+        </aside>
 
-      return (
-          <li>
-            <a href={item.path} class={isActive ? 'active' : ''}>
-              {item.label}
-            </a>
-          </li>
-      );
-    })}
-  </ul>
-</aside>
+        <main class={fullWidth ? "main-full" : ""}>
+            <a href={targetLangPath} class="lang-switch">{langLabel}</a>
+            <slot />
+        </main>
 
-<main>
-  <a href={targetLangPath} class="lang-switch">{langLabel}</a>
-  <slot />
-</main>
-
-<div id="eco-badge" class="eco-badge hidden" title="Efficiency Rating">
-  <div class="eco-header">ECO RATING</div>
-  <div class="eco-grade" id="eco-grade">-</div>
-  <div class="eco-details"><span id="eco-weight">0</span> KB</div>
-</div>
-
-<script>
-  // Circuit Breaker Pattern for CDN fallback
-  (function() {
-    const STORAGE_KEY = 'cdn_breaker_status';
-    const BREAK_DURATION = 3600 * 1000;
-    const TIMEOUT_MS = 2000;
-
-    function checkCircuit() {
-      const record = localStorage.getItem(STORAGE_KEY);
-      if (record) {
-        const { timestamp } = JSON.parse(record);
-        if (Date.now() - timestamp < BREAK_DURATION) {
-          return true;
-        } else {
-          localStorage.removeItem(STORAGE_KEY);
+        {
+            !disableEco && (
+                <div
+                    id="eco-badge"
+                    class="eco-badge hidden"
+                    title="Efficiency Rating"
+                >
+                    <div class="eco-header">ECO RATING</div>
+                    <div class="eco-grade" id="eco-grade">
+                        -
+                    </div>
+                    <div class="eco-details">
+                        <span id="eco-weight">0</span> KB
+                    </div>
+                </div>
+            )
         }
-      }
-      return false;
-    }
 
-    const forceBackup = checkCircuit();
-    const images = document.querySelectorAll('img.check-timeout');
+        <script>
+            // Circuit Breaker Pattern for CDN fallback
+            (function () {
+                const STORAGE_KEY = "cdn_breaker_status";
+                const BREAK_DURATION = 3600 * 1000;
+                const TIMEOUT_MS = 2000;
 
-    images.forEach(img => {
-      const backupSrc = img.getAttribute('data-backup');
-      if (!backupSrc) return;
+                function checkCircuit() {
+                    const record = localStorage.getItem(STORAGE_KEY);
+                    if (record) {
+                        const { timestamp } = JSON.parse(record);
+                        if (Date.now() - timestamp < BREAK_DURATION) {
+                            return true;
+                        } else {
+                            localStorage.removeItem(STORAGE_KEY);
+                        }
+                    }
+                    return false;
+                }
 
-      if (forceBackup) {
-        img.src = backupSrc;
-        return;
-      }
-      if (img.complete && img.naturalHeight > 0) return;
+                const forceBackup = checkCircuit();
+                const images = document.querySelectorAll("img.check-timeout");
 
-      const timer = setTimeout(() => {
-        if (!img.complete || img.naturalHeight === 0) {
-          console.warn('CDN Timeout -> Switching to Backup & Opening Circuit');
-          img.src = backupSrc;
-          localStorage.setItem(STORAGE_KEY, JSON.stringify({ timestamp: Date.now() }));
-        }
-      }, TIMEOUT_MS);
+                images.forEach((img) => {
+                    const backupSrc = img.getAttribute("data-backup");
+                    if (!backupSrc) return;
 
-      const clear = () => clearTimeout(timer);
-      img.addEventListener('load', clear);
-      img.addEventListener('error', clear);
-    });
-  })();
+                    if (forceBackup) {
+                        img.src = backupSrc;
+                        return;
+                    }
+                    if (img.complete && img.naturalHeight > 0) return;
 
-  // Eco Audit
-  window.addEventListener('load', () => {
-    const badge = document.getElementById('eco-badge');
-    const gradeEl = document.getElementById('eco-grade');
-    const weightEl = document.querySelector('#eco-weight');
-    if (!badge || !gradeEl || !weightEl) return;
+                    const timer = setTimeout(() => {
+                        if (!img.complete || img.naturalHeight === 0) {
+                            console.warn(
+                                "CDN Timeout -> Switching to Backup & Opening Circuit",
+                            );
+                            img.src = backupSrc;
+                            localStorage.setItem(
+                                STORAGE_KEY,
+                                JSON.stringify({ timestamp: Date.now() }),
+                            );
+                        }
+                    }, TIMEOUT_MS);
 
-    const GRADES = { 'A+++': 10, 'A++': 25, 'A+': 40, 'A': 80, 'B': 120 };
-    const REACT_BASELINE_KB = 140;
+                    const clear = () => clearTimeout(timer);
+                    img.addEventListener("load", clear);
+                    img.addEventListener("error", clear);
+                });
+            })();
 
-    const docClone = document.documentElement.cloneNode(true);
-    docClone.querySelectorAll('[data-eco-exclude]').forEach(el => el.remove());
+            // Eco Audit
+            window.addEventListener("load", () => {
+                const badge = document.getElementById("eco-badge");
+                const gradeEl = document.getElementById("eco-grade");
+                const weightEl = document.querySelector("#eco-weight");
+                if (!badge || !gradeEl || !weightEl) return;
 
-    let extCode = 0, extMedia = 0;
+                const GRADES = {
+                    "A+++": 10,
+                    "A++": 25,
+                    "A+": 40,
+                    A: 80,
+                    B: 120,
+                };
+                const REACT_BASELINE_KB = 140;
 
-    performance.getEntriesByType('resource').forEach(res => {
-      if (res.initiatorType === 'img' || /\.(jpg|png|svg|webp|gif)$/i.test(res.name)) {
-        extMedia += res.transferSize;
-      } else {
-        extCode += res.transferSize;
-      }
-    });
+                const docClone = document.documentElement.cloneNode(true);
+                docClone
+                    .querySelectorAll("[data-eco-exclude]")
+                    .forEach((el) => el.remove());
 
-    const htmlSize = new Blob([docClone.outerHTML]).size;
-    const textSize = new Blob([docClone.innerText]).size;
+                let extCode = 0,
+                    extMedia = 0;
 
-    const markupSize = Math.max(0, htmlSize - textSize);
-    const codeKB = ((extCode + markupSize) / 1024).toFixed(1);
-    const nodes = document.getElementsByTagName('*').length;
-    const codeNum = parseFloat(codeKB);
+                performance.getEntriesByType("resource").forEach((res) => {
+                    if (
+                        res.initiatorType === "img" ||
+                        /\.(jpg|png|svg|webp|gif)$/i.test(res.name)
+                    ) {
+                        extMedia += res.transferSize;
+                    } else {
+                        extCode += res.transferSize;
+                    }
+                });
 
-    let grade = 'C', color = 'grade-c';
-    if (codeNum < GRADES['A+++']) { grade = 'A+++'; color = 'grade-a'; }
-    else if (codeNum < GRADES['A++']) { grade = 'A++'; color = 'grade-a'; }
-    else if (codeNum < GRADES['A+']) { grade = 'A+'; color = 'grade-a'; }
-    else if (codeNum < GRADES['A']) { grade = 'A'; color = 'grade-b'; }
-    else if (codeNum < GRADES['B']) { grade = 'B'; color = 'grade-b'; }
+                const htmlSize = new Blob([docClone.outerHTML]).size;
+                const textSize = new Blob([docClone.innerText]).size;
 
-    const timesLighter = (REACT_BASELINE_KB / Math.max(0.1, codeNum)).toFixed(0);
+                const markupSize = Math.max(0, htmlSize - textSize);
+                const codeKB = ((extCode + markupSize) / 1024).toFixed(1);
+                const nodes = document.getElementsByTagName("*").length;
+                const codeNum = parseFloat(codeKB);
 
-    const frameworks = [];
-    if(window['React'] || window['_reactRootContainer']) frameworks.push('React');
-    if(window['Vue'] || window['__vue__']) frameworks.push('Vue');
-    if(window['ng'] || window['angular']) frameworks.push('Angular');
+                let grade = "C",
+                    color = "grade-c";
+                if (codeNum < GRADES["A+++"]) {
+                    grade = "A+++";
+                    color = "grade-a";
+                } else if (codeNum < GRADES["A++"]) {
+                    grade = "A++";
+                    color = "grade-a";
+                } else if (codeNum < GRADES["A+"]) {
+                    grade = "A+";
+                    color = "grade-a";
+                } else if (codeNum < GRADES["A"]) {
+                    grade = "A";
+                    color = "grade-b";
+                } else if (codeNum < GRADES["B"]) {
+                    grade = "B";
+                    color = "grade-b";
+                }
 
-    if(weightEl.parentElement) weightEl.parentElement.innerHTML = `${codeKB} KB struct / ${nodes} Nodes`;
-    gradeEl.innerText = grade;
-    gradeEl.className = `eco-grade ${color}`;
+                const timesLighter = (
+                    REACT_BASELINE_KB / Math.max(0.1, codeNum)
+                ).toFixed(0);
 
-    const msg = frameworks.length === 0 ? "0% JS Frameworks." : `Warning: ${frameworks.join(', ')}.`;
+                const frameworks = [];
+                if (window["React"] || window["_reactRootContainer"])
+                    frameworks.push("React");
+                if (window["Vue"] || window["__vue__"]) frameworks.push("Vue");
+                if (window["ng"] || window["angular"])
+                    frameworks.push("Angular");
 
-    let comparisonText = "";
-    if (codeNum > REACT_BASELINE_KB) {
-      comparisonText = `Heavier than a React Hello World (due to Crypto), but cleaner structure.`;
-    } else {
-      comparisonText = `Your structure is ${timesLighter}x lighter than a React Hello World.`;
-    }
+                if (weightEl.parentElement)
+                    weightEl.parentElement.innerHTML = `${codeKB} KB struct / ${nodes} Nodes`;
+                gradeEl.innerText = grade;
+                gradeEl.className = `eco-grade ${color}`;
 
-    badge.setAttribute('data-tooltip',
-        `${msg}\n\nRating based on Structure:\n• Code/Markup: ${codeKB} KB\n\n${comparisonText}`
-    );
+                const msg =
+                    frameworks.length === 0
+                        ? "0% JS Frameworks."
+                        : `Warning: ${frameworks.join(", ")}.`;
 
-    badge.classList.remove('hidden');
-  });
-</script>
+                let comparisonText = "";
+                if (codeNum > REACT_BASELINE_KB) {
+                    comparisonText = `Heavier than a React Hello World (due to Crypto), but cleaner structure.`;
+                } else {
+                    comparisonText = `Your structure is ${timesLighter}x lighter than a React Hello World.`;
+                }
 
-</body>
+                badge.setAttribute(
+                    "data-tooltip",
+                    `${msg}\n\nRating based on Structure:\n• Code/Markup: ${codeKB} KB\n\n${comparisonText}`,
+                );
+
+                badge.classList.remove("hidden");
+            });
+        </script>
+    </body>
 </html>
