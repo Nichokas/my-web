@@ -3,15 +3,12 @@ import Layout from '../../../layouts/Layout.astro';
 import fs from 'node:fs';
 import path from 'node:path';
 
-// Generar rutas estáticas para cada archivo .txt encontrado
 export async function getStaticPaths() {
   const txtDirectory = path.join(process.cwd(), 'public/txt');
-  
   try {
     const files = fs.readdirSync(txtDirectory).filter(file => file.endsWith('.txt'));
-    
     return files.map(file => ({
-      params: { slug: file }, // La URL será esp/read/nombre-archivo.txt
+      params: { slug: file },
       props: { fileName: file }
     }));
   } catch (e) {
@@ -21,7 +18,6 @@ export async function getStaticPaths() {
 
 const { fileName } = Astro.props;
 const filePath = path.join(process.cwd(), 'public/txt', fileName);
-
 let content = '';
 let fileStats = { size: 0, mtime: new Date() };
 
@@ -36,7 +32,6 @@ try {
   content = "Error reading file.";
 }
 
-// Dividir párrafos
 const paragraphs = content.split(/\n\s*\n/);
 ---
 
@@ -51,13 +46,13 @@ const paragraphs = content.split(/\n\s*\n/);
 
     <header class="doc-header">
       <div class="meta-block">
-        <div><span class="label">TXT_FILE:</span> {fileName}</div>
-        <div><span class="label">SIZE_KB:</span> {fileStats.size}</div>
-        <div><span class="label">MODIFIED:</span> {fileStats.mtime.toISOString().split('T')[0]}</div>
+        <span class="label">FILE:</span> {fileName} | 
+        <span class="label">SIZE:</span> {fileStats.size} KB | 
+        <span class="label">DATE:</span> {fileStats.mtime.toISOString().split('T')[0]}
       </div>
       
       <label for="theme-toggle" class="contrast-btn">
-        [ INVERT COLORS ]
+        [ INVERT ]
       </label>
     </header>
 
@@ -78,66 +73,78 @@ const paragraphs = content.split(/\n\s*\n/);
 
   .reader-container {
     font-family: "Courier New", Courier, monospace;
-    max-width: 68ch;
+    width: 96%;
+    max-width: none;
     margin: 0 auto;
     padding-top: 1rem;
+  }
+
+  .doc-content {
+    font-size: 0.8rem;
+    line-height: 1.4;
+    text-align: justify;
+    white-space: pre-line;
+    width: 100%;
+  }
+  
+  .doc-content p { 
+    margin-bottom: 1.2rem;
   }
 
   .nav-back a {
     text-decoration: none;
     color: var(--dim);
-    font-size: 0.85rem;
+    font-size: 0.75rem;
+    font-weight: bold;
   }
   .nav-back a:hover { color: var(--fg); text-decoration: underline; }
 
   .doc-header {
-    border-bottom: 2px solid var(--fg);
-    padding: 1.5rem 0;
-    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--fg);
+    padding: 0.5rem 0;
+    margin-bottom: 1.5rem;
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: center;
   }
 
-  .meta-block { font-size: 0.8rem; line-height: 1.4; }
-  .label { font-weight: bold; }
+  .meta-block { 
+    font-size: 0.7rem;
+    color: var(--dim);
+  }
+  .label { font-weight: bold; color: var(--fg); }
 
   .contrast-btn {
     cursor: pointer;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     border: 1px solid var(--fg);
-    padding: 2px 6px;
+    padding: 1px 5px;
+    font-weight: bold;
   }
   .contrast-btn:hover { background: var(--fg); color: var(--bg); }
 
-  .doc-content {
-    font-size: 1.05rem;
-    line-height: 1.6;
-    text-align: justify;
-    white-space: pre-line; /* Respeta saltos de línea simples dentro de párrafos */
-  }
-  
-  .doc-content p { margin-bottom: 1.5rem; }
-
   .doc-footer {
-    margin-top: 3rem;
+    margin-top: 2rem;
     text-align: center;
     color: var(--dim);
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     border-top: 1px dashed var(--dim);
-    padding-top: 1rem;
+    padding-top: 0.5rem;
   }
 
-  /* Lógica de colores (copiada de la anterior) */
+  /* Tema Oscuro / Invertido */
   #theme-toggle:checked ~ .reader-container {
-    --bg: #111; --fg: #eee; --dim: #888;
+    --bg: #111; --fg: #ccc; --dim: #666;
     background-color: var(--bg);
     color: var(--fg);
-    padding: 2rem;
+    
+    /* Pequeño padding extra cuando se activa el modo "caja" */
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-bottom: 2rem;
     border: 1px solid var(--dim);
   }
   
-  /* Soporte para el botón en modo oscuro */
   #theme-toggle:checked ~ .reader-container .contrast-btn {
     background: var(--fg); color: var(--bg);
   }
